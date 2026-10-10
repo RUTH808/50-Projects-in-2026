@@ -4,6 +4,7 @@ import datetime as dt
 import http.cookiejar
 import json
 import os
+import time
 import urllib.request
 import uuid
 
@@ -28,7 +29,16 @@ class Client:
             return json.load(response)
 
 def main():
-    student, staff, admin = Client("student"), Client("staff"), Client("admin")
+    # HTTP readiness can precede demo-account seeding by a short interval.
+    deadline = time.monotonic() + 60
+    while True:
+        try:
+            student, staff, admin = Client("student"), Client("staff"), Client("admin")
+            break
+        except urllib.error.URLError:
+            if time.monotonic() >= deadline:
+                raise RuntimeError("Demo accounts are not ready. Check backend logs and DEMO_PASSWORD.")
+            time.sleep(1)
     item = admin.call("/admin/equipment", {"name": "Demo camera " + uuid.uuid4().hex[:6], "category": "Media", "location": "Demo Lab", "description": "Created by examples/demo.py"})
     start = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=1)
     interval = {"equipmentId": item["id"], "startsAt": start.isoformat(), "endsAt": (start + dt.timedelta(hours=1)).isoformat(), "purpose": "Student demo"}
