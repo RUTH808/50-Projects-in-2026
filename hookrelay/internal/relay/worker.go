@@ -79,7 +79,17 @@ func HTTPClient(allowPrivate bool) *http.Client {
 			}
 			dialer := net.Dialer{Timeout: 5 * time.Second}
 			// Dial the validated address directly, preventing a second DNS lookup/rebinding.
-			return dialer.DialContext(ctx, network, net.JoinHostPort(ips[0].IP.String(), port))
+			for _, ip := range ips {
+				conn, dialErr := dialer.DialContext(ctx, network, net.JoinHostPort(ip.IP.String(), port))
+				if dialErr == nil {
+					return conn, nil
+				}
+				err = dialErr
+				if ctx.Err() != nil {
+					return nil, ctx.Err()
+				}
+			}
+			return nil, err
 		}}
 	return &http.Client{Transport: transport, Timeout: 10 * time.Second, CheckRedirect: func(r *http.Request, via []*http.Request) error { return http.ErrUseLastResponse }}
 }

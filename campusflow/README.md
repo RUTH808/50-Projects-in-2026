@@ -118,7 +118,7 @@ The full suite checks 12 competing reservation requests, database-level overlap 
 
 ## API outline
 
-Requests use HTTP Basic authentication. Mutating requests also need a CSRF token and cookie: fetch `GET /api/csrf`, retain its cookie, and send the response token as `X-XSRF-TOKEN`. The frontend handles this automatically. Use TLS if deploying beyond localhost.
+Requests use HTTP Basic authentication. Mutating requests also need a CSRF token and cookie: fetch `GET /api/csrf` immediately before each mutation, retain its cookie, and send the response token as `X-XSRF-TOKEN`. Authentication can rotate the cookie, so do not reuse an old token across requests. The frontend and demo script handle this automatically. Use TLS if deploying beyond localhost.
 
 | Method | Path | Purpose |
 |---|---|---|

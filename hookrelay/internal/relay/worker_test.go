@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 )
@@ -77,6 +79,20 @@ func TestDialBlocksPrivateDNSDestinations(t *testing.T) {
 	_, err := client.Get("https://localhost:8091/webhook")
 	if err == nil {
 		t.Fatal("private resolved address accepted")
+	}
+}
+
+func TestLocalClientTriesAvailableResolvedAddresses(t *testing.T) {
+	receiver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(204) }))
+	defer receiver.Close()
+	parsed, _ := url.Parse(receiver.URL)
+	response, err := HTTPClient(true).Get("http://" + net.JoinHostPort("localhost", parsed.Port()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != 204 {
+		t.Fatal(response.StatusCode)
 	}
 }
 func TestRetryBackoffBounds(t *testing.T) {

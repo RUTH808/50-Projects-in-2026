@@ -48,6 +48,8 @@ public class SecurityConfig {
       )
       .authorizeHttpRequests(auth ->
         auth
+          .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR)
+          .permitAll()
           .requestMatchers("/api/csrf", "/actuator/health")
           .permitAll()
           .requestMatchers("/api/admin/**")

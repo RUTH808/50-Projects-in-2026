@@ -87,12 +87,23 @@ function App() {
     body?: unknown,
     credentials = auth,
   ) {
+    // Fetch immediately before mutations: authentication rotates the CSRF cookie.
+    let currentToken = csrf;
+    if (method !== "GET") {
+      const tokenResponse = await fetch("/api/csrf", {
+        headers: { Authorization: "Basic " + credentials },
+      });
+      if (!tokenResponse.ok)
+        throw new Error("Unable to refresh request security token");
+      currentToken = (await tokenResponse.json()).token;
+      setCsrf(currentToken);
+    }
     const response = await fetch("/api" + path, {
       method,
       headers: {
         Authorization: "Basic " + credentials,
         ...(body ? { "Content-Type": "application/json" } : {}),
-        ...(method !== "GET" ? { "X-XSRF-TOKEN": csrf } : {}),
+        ...(method !== "GET" ? { "X-XSRF-TOKEN": currentToken } : {}),
       },
       body: body ? JSON.stringify(body) : undefined,
     });

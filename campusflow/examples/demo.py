@@ -20,6 +20,8 @@ class Client:
         headers = {"Authorization": "Basic " + self.auth}
         raw = json.dumps(body).encode() if body is not None else None
         if raw is not None:
+            # Authentication can rotate the CSRF cookie; fetch a current token.
+            self.csrf = self.call("/csrf")["token"]
             headers.update({"Content-Type": "application/json", "X-XSRF-TOKEN": self.csrf})
         req = urllib.request.Request(BASE + "/api" + path, data=raw, headers=headers)
         with self.opener.open(req, timeout=15) as response:
