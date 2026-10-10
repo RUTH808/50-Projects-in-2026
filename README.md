@@ -31,3 +31,12 @@ npm create vite@latest my-project-name -- --template react
 cd my-project-name
 npm install
 npm run dev
+
+
+## Software engineering portfolio projects
+
+13) [CampusFlow](campusflow/) — Java/Spring Boot and React/TypeScript equipment booking platform with PostgreSQL conflict prevention, role-based approvals, automatic waitlists, maintenance workflows, and audit reporting. [Setup guide](campusflow/README.md) · [Resume description](campusflow/RESUME.md).
+
+14) [HookRelay](hookrelay/) — Go webhook delivery service with transactional ingestion, a PostgreSQL durable queue, leased concurrent workers, signed HTTP delivery, retries, dead letters, replay, and a React/TypeScript console. Includes a Python receiver and failure-recovery demo. [Setup guide](hookrelay/README.md) · [Resume description](hookrelay/RESUME.md).
+
+Both projects include Docker Compose setups and automated checks. They run independently or together using different default ports.

@@ -1,0 +1,7 @@
+.env
+node_modules/
+dist/
+target/
+*.log
+*.tsbuildinfo
+.DS_Store

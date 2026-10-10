@@ -1,0 +1,21 @@
+server:
+  port: ${PORT:8080}
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/campusflow}
+    username: ${DB_USER:campusflow}
+    password: ${DB_PASSWORD:campusflow-local}
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  mvc:
+    problemdetails:
+      enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+campusflow:
+  demo: ${DEMO_ENABLED:true}
+  demo-password: ${DEMO_PASSWORD:CampusFlow-local-2026!}
