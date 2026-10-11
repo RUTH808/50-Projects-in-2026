@@ -1,0 +1,57 @@
+name: HookRelay checks
+on:
+  push:
+    paths: ['hookrelay/**', '.github/workflows/hookrelay.yml']
+  pull_request:
+    paths: ['hookrelay/**', '.github/workflows/hookrelay.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: hookrelay_test
+          POSTGRES_USER: hookrelay
+          POSTGRES_PASSWORD: hookrelay-local
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U hookrelay -d hookrelay_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4'
+          cache-dependency-path: hookrelay/go.sum
+      - run: go vet ./... && go test -race -v ./...
+        working-directory: hookrelay
+        env:
+          TEST_DATABASE_URL: postgres://hookrelay:hookrelay-local@localhost:5433/hookrelay_test?sslmode=disable
+      - run: python3 -m unittest discover -s examples -p 'test_*.py' -v
+        working-directory: hookrelay
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: hookrelay/frontend/package-lock.json
+      - run: npm ci && npm run build
+        working-directory: hookrelay/frontend
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose build && docker compose up -d
+        working-directory: hookrelay
+      - run: python3 examples/demo.py
+        working-directory: hookrelay
+      - if: always()
+        run: docker compose logs && docker compose down
+        working-directory: hookrelay

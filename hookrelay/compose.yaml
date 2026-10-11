@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: hookrelay
+      POSTGRES_USER: hookrelay
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-hookrelay-local}
+    ports: ["127.0.0.1:5433:5432"]
+    volumes: ["hookrelay-db:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hookrelay -d hookrelay"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  relay:
+    build: .
+    environment:
+      DATABASE_URL: postgres://hookrelay@db:5432/hookrelay?sslmode=disable
+      PGPASSWORD: ${DB_PASSWORD:-hookrelay-local}
+      API_TOKEN: ${API_TOKEN:-hookrelay-local-development-token-2026}
+      ALLOW_PRIVATE_ENDPOINTS: ${ALLOW_PRIVATE_ENDPOINTS:-true}
+      WORKERS: 2
+    ports: ["127.0.0.1:8090:8090"]
+    depends_on:
+      db: {condition: service_healthy}
+  receiver:
+    image: python:3.12-alpine
+    command: ["python", "/app/receiver.py"]
+    environment:
+      WEBHOOK_SECRET: ${DEMO_WEBHOOK_SECRET:-hookrelay-demo-signing-secret-change-me}
+      CONTROL_TOKEN: ${API_TOKEN:-hookrelay-local-development-token-2026}
+      RECEIVER_DB: /data/receiver.db
+    volumes: ["./examples/receiver.py:/app/receiver.py:ro", "receiver-db:/data"]
+    ports: ["127.0.0.1:8091:8091"]
+  web:
+    build: ./frontend
+    ports: ["127.0.0.1:3001:8080"]
+    depends_on: [relay]
+volumes:
+  hookrelay-db:
+  receiver-db:
