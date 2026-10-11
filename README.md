@@ -40,3 +40,12 @@ npm run dev
 14) [HookRelay](hookrelay/) — Go webhook delivery service with transactional ingestion, a PostgreSQL durable queue, leased concurrent workers, signed HTTP delivery, retries, dead letters, replay, and a React/TypeScript console. Includes a Python receiver and failure-recovery demo. [Setup guide](hookrelay/README.md) · [Resume description](hookrelay/RESUME.md).
 
 Both projects include Docker Compose setups and automated checks. They run independently or together using different default ports.
+
+## Standalone repository migration
+
+CampusFlow and HookRelay are being prepared for independent repositories:
+
+- CampusFlow target: https://github.com/RUTH808/campusflow — publication and standalone CI verification pending.
+- HookRelay target: https://github.com/RUTH808/hookrelay — publication and standalone CI verification pending.
+
+Until those repositories are published and verified, use the working [CampusFlow setup](campusflow/README.md) and [HookRelay setup](hookrelay/README.md) above. Both original project folders are retained intact.
